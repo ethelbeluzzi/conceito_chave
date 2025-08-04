@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import re
+from core.db import registrar_resposta, registrar_comentario
  
 def extrair_trechos(dados_linha):
     trechos = []
@@ -28,6 +29,12 @@ def pagina_disciplina(nome_disciplina):
         st.error("Disciplina não encontrada.")
         return
  
+    # Recupera e valida e-mail do usuário
+    email = st.session_state.get("user_email", None)
+    if not email:
+        st.warning("Você precisa estar autenticado para validar os conteúdos.")
+        return
+ 
     dados_linha = dados.iloc[0]
  
     st.markdown(f"💬 **Explicação geral:** {dados_linha['bloco_explicacao']}")
@@ -40,17 +47,27 @@ def pagina_disciplina(nome_disciplina):
         with col1:
             st.markdown(f"**{trecho['texto']}**")
         with col2:
+            key_radio = f"{nome_disciplina}_{trecho['id']}"
             escolha = st.radio(
-                f"Validação:",
-                ["", "✅ Aprovo", "❌ Desaprovo"],
-                key=f"{nome_disciplina}_{trecho['id']}"
+                label="Validação",
+                options=["", "Aprovo", "Desaprovo"],
+                key=key_radio,
+                horizontal=True
             )
-            # Aqui irá a chamada para o backend/Supabase
+            # Salva no banco a cada mudança
+            registrar_resposta(
+                email=email,
+                disciplina=nome_disciplina,
+                trecho_id=trecho["id"],
+                status=escolha.lower() if escolha else ""
+            )
  
     st.markdown("---")
     comentario = st.text_area("📝 Comentário final (opcional):", key=f"comentario_{nome_disciplina}")
+    if st.button("💾 Enviar comentário final"):
+        registrar_comentario(email, nome_disciplina, comentario)
+        st.success("Comentário salvo com sucesso.")
  
-    # Botão de voltar
     if st.button("🔙 Voltar para lista de disciplinas"):
         st.session_state.pagina = "inicio"
         st.experimental_rerun()
