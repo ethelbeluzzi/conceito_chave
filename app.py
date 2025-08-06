@@ -1,11 +1,22 @@
 # app.py
 import streamlit as st
- 
+from core.auth import login_email, verificar_sessao
+
 # Inicializa a página padrão
 if "pagina" not in st.session_state:
     st.session_state.pagina = "inicio"
- 
-# Navega conforme o estado
+
+# Verifica se o usuário está logado
+user_email = verificar_sessao()
+if not user_email:
+    login_email()
+    st.stop()  # Para execução até que o usuário se autentique
+
+# Se chegou aqui, já está autenticado
+# Guarda o e-mail na sessão
+st.session_state.user_email = user_email
+
+# Navegação entre páginas
 if st.session_state.pagina == "inicio":
     from paginas.inicio import pagina_inicio
     pagina_inicio()
