@@ -10,7 +10,7 @@ def extrair_trechos(dados_linha):
         if pd.notna(dados_linha.get(campo, None)):
             texto = dados_linha[campo]
  
-            # Converte **texto** em <strong>texto</strong> para negrito em HTML
+            # Converte **texto** em <strong> para negrito HTML
             texto_html = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", texto)
  
             trechos.append({
@@ -77,8 +77,7 @@ def pagina_disciplina(nome_disciplina):
                 status=status
             )
  
-        st.markdown("<hr>", unsafe_allow_html=True)
- 
+    st.markdown("---")
     comentario = st.text_area("📝 Comentário final (opcional):", key=f"comentario_{nome_disciplina}")
  
     if st.button("💾 Enviar comentário final"):
@@ -88,4 +87,3 @@ def pagina_disciplina(nome_disciplina):
     if st.button("🔙 Voltar para lista de disciplinas"):
         st.session_state.pagina = "inicio"
         st.rerun()
-
