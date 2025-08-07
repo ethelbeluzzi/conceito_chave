@@ -3,9 +3,13 @@ import pandas as pd
 import re
 from core.db import registrar_resposta, registrar_comentario
  
-# Converte **...** para <strong>...</strong> em HTML
-def formatar_com_negrito(texto):
-    return re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", texto)
+# Converte **...** em <strong> e quebra de linha dupla em <p>
+def formatar_html(texto):
+    if pd.isna(texto):
+        return ""
+    texto = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", texto)  # negrito
+    texto = re.sub(r"\n\s*\n", r"</p><p>", texto.strip())  # parágrafos
+    return f"<p>{texto}</p>"
  
 # Página principal da disciplina
 def pagina_disciplina(nome_disciplina):
@@ -25,20 +29,26 @@ def pagina_disciplina(nome_disciplina):
  
     dados_linha = dados.iloc[0]
  
-    # 1. Explicação geral (texto completo com negrito já incluso)
+    # 1. Mensagem fixa
     st.markdown("### 🧾 Explicação geral")
-    texto_html = formatar_com_negrito(dados_linha["bloco_explicacao"])
+    st.markdown(
+        "A disciplina completa está abaixo. Depois, na seção de validação, você pode validar os negritos individualmente."
+    )
  
+    # 2. Texto completo (com negrito e parágrafos)
+    st.markdown("---")
+    st.markdown("### 📚 Texto completo")
+ 
+    texto_html = formatar_html(dados_linha["bloco_explicacao"])
     st.markdown(
         f"<div style='text-align: justify; font-size: 16px'>{texto_html}</div>",
         unsafe_allow_html=True
     )
  
-    # 2. Seção de validação
+    # 3. Seção de validação
     st.markdown("---")
     st.markdown("### ✅ Validação")
  
-    # Itera sobre os trechos 1 a 6
     for i in range(1, 7):
         campo = f"trecho_{i}"
         texto_trecho = dados_linha.get(campo, None)
@@ -47,7 +57,8 @@ def pagina_disciplina(nome_disciplina):
             col1, col2 = st.columns([5, 2])
  
             with col1:
-                st.markdown(f"<div style='font-size: 16px'>{formatar_com_negrito(texto_trecho)}</div>", unsafe_allow_html=True)
+                trecho_html = formatar_html(texto_trecho)
+                st.markdown(f"<div style='font-size: 16px'>{trecho_html}</div>", unsafe_allow_html=True)
  
             with col2:
                 escolha = st.radio(
