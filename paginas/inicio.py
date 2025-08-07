@@ -15,4 +15,4 @@ def pagina_inicio():
     for disciplina in sorted(disciplinas):
         if st.button(f"📘 {disciplina}"):
             st.session_state.pagina = f"disciplina_{disciplina}"
-            st.experimental_rerun()
+            st.rerun()
