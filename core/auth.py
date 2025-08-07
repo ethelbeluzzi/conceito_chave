@@ -26,7 +26,7 @@ def login_email():
         # Salva login na sessão
         st.session_state.user_email = email.strip().lower()
         st.session_state.pagina = "inicio"
-        st.experimental_rerun()
+        st.rerun()
 
 def verificar_sessao():
     """
