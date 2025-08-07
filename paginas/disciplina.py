@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import re
 from core.db import registrar_resposta, registrar_comentario
- 
+
 def extrair_trechos(dados_linha):
     trechos = []
     for i in range(1, 7):  # trecho_1 a trecho_6
@@ -14,60 +14,61 @@ def extrair_trechos(dados_linha):
             if match:
                 trechos.append({
                     "id": f"t{i}",
-"texto": match.group(1),
+                    "texto": match.group(1),
                     "completo": texto
                 })
     return trechos
- 
+
 def pagina_disciplina(nome_disciplina):
     st.title(f"📘 {nome_disciplina}")
     
     df = pd.read_csv("data/textos.csv")
     dados = df[df["disciplina"] == nome_disciplina]
- 
+
     if dados.empty:
         st.error("Disciplina não encontrada.")
         return
- 
-    # Recupera e valida e-mail do usuário
+
     email = st.session_state.get("user_email", None)
     if not email:
-        st.warning("Você precisa estar autenticado para validar os conteúdos.")
+        st.warning("Você precisa estar autenticado.")
         return
- 
+
     dados_linha = dados.iloc[0]
- 
+
     st.markdown(f"💬 **Explicação geral:** {dados_linha['bloco_explicacao']}")
     st.markdown("---")
- 
+
     trechos = extrair_trechos(dados_linha)
- 
+
     for trecho in trechos:
         col1, col2 = st.columns([4, 2])
         with col1:
             st.markdown(f"**{trecho['texto']}**")
         with col2:
-            key_radio = f"{nome_disciplina}_{trecho['id']}"
+            key = f"radio_{nome_disciplina}_{trecho['id']}"
             escolha = st.radio(
-                label="Validação",
+                label="",
                 options=["", "Aprovo", "Desaprovo"],
-                key=key_radio,
+                key=key,
                 horizontal=True
             )
-            # Salva no banco a cada mudança
+
+            # Atualiza o banco
             registrar_resposta(
                 email=email,
                 disciplina=nome_disciplina,
                 trecho_id=trecho["id"],
-                status=escolha.lower() if escolha else ""
+                status=escolha.lower() if escolha else None
             )
- 
+
     st.markdown("---")
     comentario = st.text_area("📝 Comentário final (opcional):", key=f"comentario_{nome_disciplina}")
+
     if st.button("💾 Enviar comentário final"):
         registrar_comentario(email, nome_disciplina, comentario)
         st.success("Comentário salvo com sucesso.")
- 
+
     if st.button("🔙 Voltar para lista de disciplinas"):
         st.session_state.pagina = "inicio"
         st.experimental_rerun()
