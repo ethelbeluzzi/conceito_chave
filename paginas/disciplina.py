@@ -9,11 +9,13 @@ def extrair_trechos(dados_linha):
         campo = f"trecho_{i}"
         if pd.notna(dados_linha.get(campo, None)):
             texto = dados_linha[campo]
-            match = re.search(r"\*\*(.*?)\*\*", texto)
+ 
+            # Converte **texto** em <strong>texto</strong> para negrito em HTML
+            texto_html = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", texto)
+ 
             trechos.append({
                 "id": f"t{i}",
-"texto": match.group(1) if match else "",
-                "completo": texto
+                "texto_html": texto_html
             })
     return trechos
  
@@ -40,21 +42,26 @@ def pagina_disciplina(nome_disciplina):
     trechos = extrair_trechos(dados_linha)
  
     for trecho in trechos:
-        col1, col2 = st.columns([4, 2])
+        col1, col2 = st.columns([5, 2])
  
         with col1:
             st.markdown(
-                f"<div style='text-align: justify; font-size: 16px; padding-right: 10px;'>{trecho['completo']}</div>",
+                f"""
+                <div style='text-align: justify; font-size: 16px;
+                            padding-right: 20px; border-right: 1px solid #ccc;'>
+                    {trecho['texto_html']}
+                </div>
+                """,
                 unsafe_allow_html=True
             )
  
         with col2:
             key = f"radio_{nome_disciplina}_{trecho['id']}"
             escolha = st.radio(
-                label="",
+                label="Validação:",
                 options=["Não informado", "Aprovo", "Desaprovo"],
                 key=key,
-                horizontal=True
+                horizontal=False
             )
  
             status = None
@@ -70,7 +77,7 @@ def pagina_disciplina(nome_disciplina):
                 status=status
             )
  
-        st.markdown("---")
+        st.markdown("<hr>", unsafe_allow_html=True)
  
     comentario = st.text_area("📝 Comentário final (opcional):", key=f"comentario_{nome_disciplina}")
  
