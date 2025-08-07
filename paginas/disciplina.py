@@ -8,7 +8,9 @@ def formatar_html(texto):
     if pd.isna(texto):
         return ""
     texto = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", texto)  # negrito
-    texto = re.sub(r"\n\s*\n", r"</p><p>", texto.strip())  # parágrafos
+    texto = texto.replace("\r", "")  # remove \r se houver
+    texto = texto.replace("\n\n", "</p><p>")  # parágrafos
+    texto = texto.replace("\n", " ")  # quebras simples → espaço
     return f"<p>{texto}</p>"
  
 # Página principal da disciplina
