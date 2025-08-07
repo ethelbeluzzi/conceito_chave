@@ -39,18 +39,37 @@ def pagina_disciplina(nome_disciplina):
     st.markdown("---")
 
     trechos = extrair_trechos(dados_linha)
-
     for trecho in trechos:
         col1, col2 = st.columns([4, 2])
         with col1:
-            st.markdown(f"**{trecho['texto']}**")
+            st.markdown(
+                f"<div style='text-align: justify; font-size: 16px; padding-right: 10px;'>"
+                f"<b>{trecho['texto']}</b></div>",
+                unsafe_allow_html=True
+            )
         with col2:
+            st.markdown("---")  # traço separador acima do botão
             key = f"radio_{nome_disciplina}_{trecho['id']}"
             escolha = st.radio(
                 label="",
-                options=["", "Aprovo", "Desaprovo"],
+                options=["Não informado", "Aprovo", "Desaprovo"],
                 key=key,
                 horizontal=True
+            )
+     
+            # Mapeia escolha para status
+            status = None
+            if escolha == "Aprovo":
+                status = "aprovo"
+            elif escolha == "Desaprovo":
+                status = "desaprovo"
+     
+            # Atualiza no banco
+            registrar_resposta(
+                email=email,
+                disciplina=nome_disciplina,
+                trecho_id=trecho["id"],
+                status=status
             )
 
             # Mapeia escolha para status
