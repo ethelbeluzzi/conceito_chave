@@ -3,6 +3,7 @@ import pandas as pd
 import re
 from core.db import registrar_resposta, registrar_comentario
  
+# Extrai os trechos mantendo o texto completo, apenas destacando o negrito
 def extrair_trechos(dados_linha):
     trechos = []
     for i in range(1, 7):  # trecho_1 a trecho_6
@@ -10,7 +11,7 @@ def extrair_trechos(dados_linha):
         if pd.notna(dados_linha.get(campo, None)):
             texto = dados_linha[campo]
  
-            # Converte **texto** em <strong> para negrito HTML
+            # Converte **...** para <strong>...</strong> dentro do texto
             texto_html = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", texto)
  
             trechos.append({
@@ -19,9 +20,11 @@ def extrair_trechos(dados_linha):
             })
     return trechos
  
+# Página principal de exibição da disciplina
 def pagina_disciplina(nome_disciplina):
     st.title(f"📘 {nome_disciplina}")
  
+    # Carrega o CSV com os textos
     df = pd.read_csv("data/textos.csv")
     dados = df[df["disciplina"] == nome_disciplina]
  
@@ -36,13 +39,15 @@ def pagina_disciplina(nome_disciplina):
  
     dados_linha = dados.iloc[0]
  
+    # Explicação geral
     st.markdown(f"💬 **Explicação geral:** {dados_linha['bloco_explicacao']}")
-    st.markdown("---")
  
+    # Extrai trechos com negrito destacado
     trechos = extrair_trechos(dados_linha)
  
+    # Para cada trecho: exibe o texto completo com negrito + botão de validação
     for trecho in trechos:
-        col1, col2 = st.columns([5, 2])
+        col1, col2 = st.columns([5, 2])  # Divisão vertical
  
         with col1:
             st.markdown(
@@ -64,6 +69,7 @@ def pagina_disciplina(nome_disciplina):
                 horizontal=False
             )
  
+            # Salva a resposta no banco
             status = None
             if escolha == "Aprovo":
                 status = "aprovo"
@@ -77,6 +83,7 @@ def pagina_disciplina(nome_disciplina):
                 status=status
             )
  
+    # Comentário final (opcional)
     st.markdown("---")
     comentario = st.text_area("📝 Comentário final (opcional):", key=f"comentario_{nome_disciplina}")
  
