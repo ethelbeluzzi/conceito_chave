@@ -1,4 +1,3 @@
-# paginas/disciplina.py
 import streamlit as st
 import pandas as pd
 import re
@@ -54,12 +53,19 @@ def pagina_disciplina(nome_disciplina):
                 horizontal=True
             )
 
-            # Atualiza o banco
+            # Mapeia escolha para status
+            status = None
+            if escolha == "Aprovo":
+                status = "aprovo"
+            elif escolha == "Desaprovo":
+                status = "desaprovo"
+
+            # Atualiza no banco
             registrar_resposta(
                 email=email,
                 disciplina=nome_disciplina,
                 trecho_id=trecho["id"],
-                status=escolha.lower() if escolha else None
+                status=status
             )
 
     st.markdown("---")
@@ -71,4 +77,5 @@ def pagina_disciplina(nome_disciplina):
 
     if st.button("🔙 Voltar para lista de disciplinas"):
         st.session_state.pagina = "inicio"
-        st.experimental_rerun()
+        st.rerun()
+
