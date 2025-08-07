@@ -23,6 +23,9 @@ def registrar_resposta(email, disciplina, trecho_id, status):
         "timestamp": datetime.utcnow().isoformat()
     }
 
+    # 🔍 DEBUG: Exibe o conteúdo que será enviado ao Supabase
+    st.write("📤 Enviando para Supabase:", data)
+
     existente = supabase.table("validacoes") \
         .select("id") \
         .eq("user_email", email) \
@@ -68,3 +71,4 @@ def registrar_comentario(email, disciplina, comentario):
         supabase.table("validacoes") \
             .insert(data) \
             .execute()
+
