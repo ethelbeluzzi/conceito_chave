@@ -3,20 +3,22 @@ import pandas as pd
 import re
 from core.db import registrar_resposta, registrar_comentario
  
-# Converte **...** em <strong> e quebra de linha dupla em <p>
+# Formata o texto substituindo **negrito** por <strong> e mantendo parágrafos
 def formatar_html(texto):
     if pd.isna(texto):
         return ""
-    texto = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", texto)  # negrito
-    texto = texto.replace("\r", "")  # remove \r se houver
-    texto = texto.replace("\n\n", "</p><p>")  # parágrafos
-    texto = texto.replace("\n", " ")  # quebras simples → espaço
+    texto = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", texto)  # Negrito
+    texto = texto.replace("\r", "")  # Remove quebras de carroça
+    texto = texto.strip()
+    texto = texto.replace("\n\n", "</p><p>")  # Parágrafos
+    texto = texto.replace("\n", " ")  # Quebras simples viram espaço
     return f"<p>{texto}</p>"
  
 # Página principal da disciplina
 def pagina_disciplina(nome_disciplina):
     st.title(f"📘 {nome_disciplina}")
  
+    # Carrega os dados
     df = pd.read_csv("data/textos.csv")
     dados = df[df["disciplina"] == nome_disciplina]
  
@@ -24,6 +26,7 @@ def pagina_disciplina(nome_disciplina):
         st.error("Disciplina não encontrada.")
         return
  
+    # Verifica autenticação
     email = st.session_state.get("user_email", None)
     if not email:
         st.warning("Você precisa estar autenticado.")
@@ -31,23 +34,18 @@ def pagina_disciplina(nome_disciplina):
  
     dados_linha = dados.iloc[0]
  
-    # 1. Mensagem fixa
+    # 1. Mensagem de instrução
     st.markdown("### 🧾 Explicação geral")
-    st.markdown(
-        "A disciplina completa está abaixo. Depois, na seção de validação, você pode validar os negritos individualmente."
-    )
+    st.markdown("A disciplina completa está abaixo. Depois, na seção de validação, você pode validar os negritos individualmente.")
  
-    # 2. Texto completo (com negrito e parágrafos)
+    # 2. Texto completo (renderizado com HTML)
     st.markdown("---")
     st.markdown("### 📚 Texto completo")
  
     texto_html = formatar_html(dados_linha["bloco_explicacao"])
-    st.markdown(
-        f"<div style='text-align: justify; font-size: 16px'>{texto_html}</div>",
-        unsafe_allow_html=True
-    )
+    st.markdown(texto_html, unsafe_allow_html=True)
  
-    # 3. Seção de validação
+    # 3. Validação
     st.markdown("---")
     st.markdown("### ✅ Validação")
  
@@ -60,7 +58,7 @@ def pagina_disciplina(nome_disciplina):
  
             with col1:
                 trecho_html = formatar_html(texto_trecho)
-                st.markdown(f"<div style='font-size: 16px'>{trecho_html}</div>", unsafe_allow_html=True)
+                st.markdown(trecho_html, unsafe_allow_html=True)
  
             with col2:
                 escolha = st.radio(
@@ -85,7 +83,7 @@ def pagina_disciplina(nome_disciplina):
  
             st.markdown("---")
  
-    # Comentário final
+    # 4. Comentário final
     comentario = st.text_area("📝 Comentário final (opcional):", key=f"comentario_{nome_disciplina}")
  
     if st.button("💾 Enviar comentário final"):
