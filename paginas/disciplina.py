@@ -30,15 +30,15 @@ def pagina_disciplina(nome_disciplina: str):
 
     dados_linha = dados.iloc[0]
 
-    # ==== Título da disciplina (menor) e info da unidade/aula ====
-    st.markdown(f"<h2 style='margin-bottom:0px;'>{nome_disciplina}</h2>", unsafe_allow_html=True)
+    # ==== Título da disciplina e info da unidade/aula ====
+    st.markdown(f"<h2 style='margin-bottom:2px;'>{nome_disciplina}</h2>", unsafe_allow_html=True)
     st.markdown(
-        f"<p style='font-size:16px; color:gray;'>Unidade {dados_linha['unidade']} - Aula {dados_linha['aula']}</p>",
+        f"<div style='font-size:18px; color:gray; margin-bottom:20px;'>Unidade {dados_linha['unidade']} - Aula {dados_linha['aula']}</div>",
         unsafe_allow_html=True
     )
 
-    # 1) Mensagem de instrução
-    st.markdown("### 🧾 Explicação geral")
+    # 1) Mensagem de instrução (menor que antes)
+    st.markdown("<h4>🧾 Explicação geral</h4>", unsafe_allow_html=True)
     st.markdown(
         "A disciplina completa está abaixo. Depois, na seção de validação, você pode validar os negritos individualmente."
     )
