@@ -1,8 +1,15 @@
 # paginas/inicio.py
 import streamlit as st
 import pandas as pd
+import re
 
-# Carrega todas as disciplinas com suas aulas
+# Corrige campos como "Unidade 1" → 1
+def extrair_numero(valor):
+    if isinstance(valor, str):
+        match = re.search(r"\d+", valor)
+        return int(match.group()) if match else 0
+    return int(valor)
+
 def carregar_disciplinas():
     df = pd.read_csv("data/textos.csv")
     df = df.dropna(subset=["disciplina"])
@@ -13,25 +20,20 @@ def pagina_inicio():
     st.write("Selecione uma aula dentro de cada disciplina para validar os trechos destacados.")
 
     df = carregar_disciplinas()
-
-    # Agrupa por disciplina
     disciplinas = df["disciplina"].unique()
 
     for disciplina in sorted(disciplinas):
-        # Expander por disciplina
         with st.expander(f"📘 {disciplina}"):
             df_disciplina = df[df["disciplina"] == disciplina]
             df_disciplina = df_disciplina.sort_values(by=["unidade", "aula"])
 
             for _, row in df_disciplina.iterrows():
-                unidade = row["unidade"]
-                aula = row["aula"]
+                unidade = extrair_numero(row["unidade"])
+                aula = extrair_numero(row["aula"])
 
                 if st.button(
                     f"Unidade {unidade} | Aula {aula}",
                     key=f"{disciplina}_u{unidade}_a{aula}"
                 ):
-                    # Página da disciplina agora precisa usar chave única por unidade/aula
                     st.session_state.pagina = f"disciplina_{disciplina}_u{unidade}_a{aula}"
                     st.rerun()
-
