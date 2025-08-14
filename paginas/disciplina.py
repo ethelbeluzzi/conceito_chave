@@ -42,7 +42,7 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
     )
 
     st.markdown("<h4>🧾 Explicação geral</h4>", unsafe_allow_html=True)
-    st.markdown("A disciplina completa está abaixo. Depois, na seção de validação, você pode validar os negritos individualmente.")
+    st.markdown("A aula completa da disciplina está abaixo. Depois, na seção de validação, você pode validar os negritos individualmente.")
 
     st.markdown("---")
     st.markdown("### 📚 Texto completo")
