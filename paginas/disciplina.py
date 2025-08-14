@@ -43,10 +43,13 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
         f"<div style='font-size:20px; margin-bottom:20px;'>Unidade {unidade} - Aula {aula}</div>",
         unsafe_allow_html=True
     )
+    
+    # 3) Explicação geral
+    st.markdown("<h4>🧾 Explicação geral</h4>", unsafe_allow_html=True) st.markdown("Esses são os conceitos-chave para validação. O texto completo da aula está abaixo para consulta.")
 
     st.markdown("---")
 
-    # 3) Validação — "Conceitos-chave"
+    # 4) Validação — "Conceitos-chave"
     st.markdown("### ✅ Conceitos-chave")
     for i in range(1, 7):
         campo = f"trecho_{i}"
