@@ -13,21 +13,16 @@ def preparar_markdown(texto: str) -> str:
 def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
     df = pd.read_csv("data/textos.csv")
 
-    st.markdown(f"🛠️ Debug: disciplina='{nome_disciplina}', unidade={unidade}, aula={aula}")
-    st.write("📄 Preview do DataFrame:")
-    st.write(df.head(3))
-    
-    # Tipos
-    st.write("📊 Tipos das colunas:")
-    st.write(df.dtypes)
-    
-    # Filtro exato
+    # Limpeza defensiva: garante match robusto
+    df["disciplina"] = df["disciplina"].astype(str).str.strip()
+    df["unidade"] = df["unidade"].astype(str).str.extract(r"(\d+)").astype(int)
+    df["aula"] = df["aula"].astype(str).str.extract(r"(\d+)").astype(int)
+
     dados = df[
         (df["disciplina"] == nome_disciplina) &
-        (df["unidade"].astype(int) == int(unidade)) &
-        (df["aula"].astype(int) == int(aula))
+        (df["unidade"] == unidade) &
+        (df["aula"] == aula)
     ]
-
 
     if dados.empty:
         st.error("Disciplina não encontrada.")
@@ -120,4 +115,3 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
                     st.rerun()
             else:
                 st.markdown("<p style='color:gray;'>✅ Última aula da disciplina.</p>", unsafe_allow_html=True)
-
