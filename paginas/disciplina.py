@@ -13,7 +13,7 @@ def preparar_markdown(texto: str) -> str:
 def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
     df = pd.read_csv("data/textos.csv")
 
-    # Limpeza defensiva: garante match robusto
+    # Limpeza defensiva
     df["disciplina"] = df["disciplina"].astype(str).str.strip()
     df["unidade"] = df["unidade"].astype(str).str.extract(r"(\d+)").astype(int)
     df["aula"] = df["aula"].astype(str).str.extract(r"(\d+)").astype(int)
@@ -35,24 +35,19 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
 
     dados_linha = dados.iloc[0]
 
+    # 1) Nome da disciplina
     st.markdown(f"<h2 style='margin-bottom:2px;'>{nome_disciplina}</h2>", unsafe_allow_html=True)
+
+    # 2) Unidade - Aula
     st.markdown(
         f"<div style='font-size:20px; margin-bottom:20px;'>Unidade {unidade} - Aula {aula}</div>",
         unsafe_allow_html=True
     )
 
-    st.markdown("<h4>🧾 Explicação geral</h4>", unsafe_allow_html=True)
-    st.markdown("A aula completa da disciplina está abaixo. Depois, na seção de validação, você pode validar os negritos individualmente.")
-
     st.markdown("---")
-    st.markdown("### 📚 Texto completo")
 
-    texto_md = preparar_markdown(dados_linha["conteudo"])
-    st.markdown(texto_md)
-
-    st.markdown("---")
-    st.markdown("### ✅ Validação")
-
+    # 3) Validação — "Conceitos-chave"
+    st.markdown("### ✅ Conceitos-chave")
     for i in range(1, 7):
         campo = f"trecho_{i}"
         texto_trecho = dados_linha.get(campo, None)
@@ -82,13 +77,24 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
                 )
             st.markdown("---")
 
-    comentario = st.text_area("📝 Comentário final (opcional):", key=f"comentario_{nome_disciplina}_u{unidade}_a{aula}")
-
+    # Comentário final opcional
+    comentario = st.text_area(
+        "📝 Comentário final (opcional):",
+        key=f"comentario_{nome_disciplina}_u{unidade}_a{aula}"
+    )
     if st.button("💾 Enviar comentário final"):
         registrar_comentario(email, nome_disciplina, comentario)
         st.success("Comentário salvo com sucesso.")
 
+    st.markdown("---")
+
+    # 4) Texto completo — "Texto completo da aula para consulta"
+    st.markdown("### 📚 Texto completo da aula para consulta")
+    texto_md = preparar_markdown(dados_linha["conteudo"])
+    st.markdown(texto_md)
+
     # Navegação: Voltar / Próxima aula
+    st.markdown("---")
     col_esq, col_dir = st.columns([1, 1])
 
     with col_esq:
