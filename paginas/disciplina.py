@@ -13,11 +13,21 @@ def preparar_markdown(texto: str) -> str:
 def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
     df = pd.read_csv("data/textos.csv")
 
+    st.markdown(f"🛠️ Debug: disciplina='{nome_disciplina}', unidade={unidade}, aula={aula}")
+    st.write("📄 Preview do DataFrame:")
+    st.write(df.head(3))
+    
+    # Tipos
+    st.write("📊 Tipos das colunas:")
+    st.write(df.dtypes)
+    
+    # Filtro exato
     dados = df[
         (df["disciplina"] == nome_disciplina) &
-        (df["unidade"] == unidade) &
-        (df["aula"] == aula)
+        (df["unidade"].astype(int) == int(unidade)) &
+        (df["aula"].astype(int) == int(aula))
     ]
+
 
     if dados.empty:
         st.error("Disciplina não encontrada.")
