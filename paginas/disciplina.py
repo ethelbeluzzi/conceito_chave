@@ -33,7 +33,7 @@ def pagina_disciplina(nome_disciplina: str):
     # ==== Título da disciplina e info da unidade/aula ====
     st.markdown(f"<h2 style='margin-bottom:2px;'>{nome_disciplina}</h2>", unsafe_allow_html=True)
     st.markdown(
-        f"<div style='font-size:18px; color:gray; margin-bottom:20px;'>Unidade {dados_linha['unidade']} - Aula {dados_linha['aula']}</div>",
+        f"<div style='font-size:20px; margin-bottom:20px;'>Unidade {dados_linha['unidade']} - Aula {dados_linha['aula']}</div>",
         unsafe_allow_html=True
     )
 
