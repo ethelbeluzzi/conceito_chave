@@ -10,9 +10,8 @@ if "pagina" not in st.session_state:
 user_email = verificar_sessao()
 if not user_email:
     login_email()
-    st.stop()  # Para execução até que o usuário se autentique
+    st.stop()
 
-# Se chegou aqui, já está autenticado
 # Guarda o e-mail na sessão
 st.session_state.user_email = user_email
 
@@ -22,5 +21,13 @@ if st.session_state.pagina == "inicio":
     pagina_inicio()
 elif st.session_state.pagina.startswith("disciplina_"):
     from paginas.disciplina import pagina_disciplina
-    nome_disciplina = st.session_state.pagina.split("_", 1)[1]
-    pagina_disciplina(nome_disciplina)
+
+    try:
+        _, resto = st.session_state.pagina.split("disciplina_", 1)
+        nome_raw, unidade_aula = resto.rsplit("_u", 1)
+        unidade, aula = map(int, unidade_aula.split("_a"))
+        nome_disciplina = nome_raw.strip()
+        pagina_disciplina(nome_disciplina, unidade, aula)
+    except Exception as e:
+        st.error("Erro ao carregar a página da disciplina.")
+        st.exception(e)
