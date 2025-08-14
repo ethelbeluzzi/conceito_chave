@@ -3,23 +3,23 @@ import streamlit as st
 import pandas as pd
 from core.db import registrar_resposta, registrar_comentario
 
-# Converte sequências literais "\n" do CSV em quebras reais
-# e entrega texto em Markdown (títulos ### e **negrito** funcionarão).
+# Converte sequências literais "\n" em quebras reais e entrega Markdown
 def preparar_markdown(texto: str) -> str:
     if pd.isna(texto):
         return ""
     s = str(texto)
     s = s.replace("\r", "").strip()
-    # Muitos CSVs gravam barra+n literalmente; convertemos para quebra real
-    s = s.replace("\\n", "\n")
+    s = s.replace("\\n", "\n")  # converte "\n" literal para quebra real
     return s
 
 # Página principal da disciplina
 def pagina_disciplina(nome_disciplina: str):
     st.title(f"📘 {nome_disciplina}")
 
-    # Carrega os dados
+    # Carrega o CSV no novo formato
     df = pd.read_csv("data/textos.csv")
+    
+    # Filtra pela disciplina
     dados = df[df["disciplina"] == nome_disciplina]
 
     if dados.empty:
@@ -40,11 +40,11 @@ def pagina_disciplina(nome_disciplina: str):
         "A disciplina completa está abaixo. Depois, na seção de validação, você pode validar os negritos individualmente."
     )
 
-    # 2) Texto completo (renderizado em Markdown)
+    # 2) Texto completo (agora vem de 'conteudo')
     st.markdown("---")
     st.markdown("### 📚 Texto completo")
 
-    texto_md = preparar_markdown(dados_linha["bloco_explicacao"])
+    texto_md = preparar_markdown(dados_linha["conteudo"])
     st.markdown(texto_md)
 
     # 3) Validação
@@ -53,7 +53,10 @@ def pagina_disciplina(nome_disciplina: str):
 
     for i in range(1, 7):
         campo = f"trecho_{i}"
-        texto_trecho = dados_linha.get(campo, None)
+        if campo in dados_linha:
+            texto_trecho = dados_linha[campo]
+        else:
+            texto_trecho = None
 
         if pd.notna(texto_trecho):
             col1, col2 = st.columns([5, 2])
