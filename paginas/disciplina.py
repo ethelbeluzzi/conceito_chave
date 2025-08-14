@@ -3,25 +3,21 @@ import streamlit as st
 import pandas as pd
 from core.db import registrar_resposta, registrar_comentario
 
-# Converte sequências literais "\n" em quebras reais e entrega Markdown
+# Converte "\n" literais em quebras reais e mantém Markdown
 def preparar_markdown(texto: str) -> str:
     if pd.isna(texto):
         return ""
-    s = str(texto)
-    s = s.replace("\r", "").strip()
-    s = s.replace("\\n", "\n")  # converte "\n" literal para quebra real
+    s = str(texto).replace("\r", "").strip()
+    s = s.replace("\\n", "\n")  # converte literal \n em quebra real
     return s
 
 # Página principal da disciplina
 def pagina_disciplina(nome_disciplina: str):
-    st.title(f"📘 {nome_disciplina}")
-
-    # Carrega o CSV no novo formato
+    # Carrega os dados no formato: disciplina,unidade,aula,conteudo,trecho_1..trecho_6
     df = pd.read_csv("data/textos.csv")
-    
+
     # Filtra pela disciplina
     dados = df[df["disciplina"] == nome_disciplina]
-
     if dados.empty:
         st.error("Disciplina não encontrada.")
         return
@@ -34,13 +30,20 @@ def pagina_disciplina(nome_disciplina: str):
 
     dados_linha = dados.iloc[0]
 
+    # ==== Título da disciplina (menor) e info da unidade/aula ====
+    st.markdown(f"<h2 style='margin-bottom:0px;'>{nome_disciplina}</h2>", unsafe_allow_html=True)
+    st.markdown(
+        f"<p style='font-size:16px; color:gray;'>Unidade {dados_linha['unidade']} - Aula {dados_linha['aula']}</p>",
+        unsafe_allow_html=True
+    )
+
     # 1) Mensagem de instrução
     st.markdown("### 🧾 Explicação geral")
     st.markdown(
         "A disciplina completa está abaixo. Depois, na seção de validação, você pode validar os negritos individualmente."
     )
 
-    # 2) Texto completo (agora vem de 'conteudo')
+    # 2) Texto completo (vem de 'conteudo')
     st.markdown("---")
     st.markdown("### 📚 Texto completo")
 
@@ -53,12 +56,9 @@ def pagina_disciplina(nome_disciplina: str):
 
     for i in range(1, 7):
         campo = f"trecho_{i}"
-        if campo in dados_linha:
-            texto_trecho = dados_linha[campo]
-        else:
-            texto_trecho = None
+        texto_trecho = dados_linha.get(campo, None)
 
-        if pd.notna(texto_trecho):
+        if pd.notna(texto_trecho) and str(texto_trecho).strip():
             col1, col2 = st.columns([5, 2])
 
             with col1:
