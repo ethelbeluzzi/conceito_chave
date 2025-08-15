@@ -3,14 +3,18 @@ import streamlit as st
 import pandas as pd
 from core.db import registrar_resposta, registrar_comentario
 
+
 def preparar_markdown(texto: str) -> str:
+    """Normaliza quebras e espaços para exibição em markdown."""
     if pd.isna(texto):
         return ""
     s = str(texto).replace("\r", "").strip()
     s = s.replace("\\n", "\n")
     return s
 
+
 def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
+    # Carrega base
     df = pd.read_csv("data/textos.csv")
 
     # Limpeza defensiva
@@ -18,10 +22,11 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
     df["unidade"] = df["unidade"].astype(str).str.extract(r"(\d+)").astype(int)
     df["aula"] = df["aula"].astype(str).str.extract(r"(\d+)").astype(int)
 
+    # Filtro do registro atual
     dados = df[
-        (df["disciplina"] == nome_disciplina) &
-        (df["unidade"] == unidade) &
-        (df["aula"] == aula)
+        (df["disciplina"] == nome_disciplina)
+        & (df["unidade"] == unidade)
+        & (df["aula"] == aula)
     ]
 
     if dados.empty:
@@ -43,8 +48,7 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
         f"<div style='font-size:20px; margin-bottom:20px;'>Unidade {unidade} - Aula {aula}</div>",
         unsafe_allow_html=True
     )
-    
-    # 3) Explicação geral
+
     # 3) Explicação geral
     st.markdown("<h4>🧾 Explicação geral</h4>", unsafe_allow_html=True)
     st.markdown(
@@ -54,36 +58,48 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
 
     st.markdown("---")
 
-    # 4) Validação — "Conceitos-chave"
+    # 4) Validação — "Conceitos-chave" (em linhas de 4 colunas)
     st.markdown("### ✅ Conceitos-chave")
+
+    cols = st.columns(4)  # primeira fileira
+    col_index = 0
+
     for i in range(1, 7):
         campo = f"trecho_{i}"
         texto_trecho = dados_linha.get(campo, None)
 
         if pd.notna(texto_trecho) and str(texto_trecho).strip():
-            col1, col2 = st.columns([5, 2])
-            with col1:
+            with cols[col_index]:
                 trecho_md = preparar_markdown(texto_trecho)
                 st.markdown(trecho_md)
-            with col2:
+
                 escolha = st.radio(
                     label="Validação:",
                     options=["Não informado", "Aprovo", "Desaprovo"],
                     key=f"radio_{nome_disciplina}_u{unidade}_a{aula}_t{i}",
                     horizontal=True,
                 )
+
                 status = None
                 if escolha == "Aprovo":
                     status = "aprovo"
                 elif escolha == "Desaprovo":
                     status = "desaprovo"
+
                 registrar_resposta(
                     email=email,
                     disciplina=nome_disciplina,
                     trecho_id=f"t{i}",
                     status=status,
                 )
-            st.markdown("---")
+
+            col_index += 1
+            if col_index == 4:
+                # nova fileira de 4 colunas
+                cols = st.columns(4)
+                col_index = 0
+
+    st.markdown("---")
 
     # Comentário final opcional
     comentario = st.text_area(
@@ -96,7 +112,7 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
 
     st.markdown("---")
 
-    # 4) Texto completo — "Texto completo da aula para consulta"
+    # 5) Texto completo — "Texto completo da aula para consulta"
     st.markdown("### 📚 Texto completo da aula para consulta")
     texto_md = preparar_markdown(dados_linha["conteudo"])
     st.markdown(texto_md)
@@ -113,8 +129,8 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
     with col_dir:
         df_disciplina = df[df["disciplina"] == nome_disciplina].sort_values(by=["unidade", "aula"])
         idx_atual = df_disciplina[
-            (df_disciplina["unidade"] == unidade) &
-            (df_disciplina["aula"] == aula)
+            (df_disciplina["unidade"] == unidade)
+            & (df_disciplina["aula"] == aula)
         ].index
 
         if not idx_atual.empty:
