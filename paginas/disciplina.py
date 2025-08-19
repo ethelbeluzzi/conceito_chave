@@ -92,7 +92,7 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
         key=f"comentario_{nome_disciplina}_u{unidade}_a{aula}"
     )
     if st.button("💾 Enviar comentário final"):
-        registrar_comentario(email, nome_disciplina, comentario)
+        registrar_comentario(email, nome_disciplina, unidade, aula, comentario)
         st.success("Comentário salvo com sucesso.")
 
     st.markdown("---")
