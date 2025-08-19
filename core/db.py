@@ -43,3 +43,36 @@ def registrar_resposta(email, disciplina, unidade, aula, trecho_id, status):
         supabase.table("validacoes") \
             .insert(data) \
             .execute()
+
+def registrar_comentario(email, disciplina, unidade, aula, comentario):
+    if not email:
+        return
+
+    data = {
+        "user_email": email,
+        "disciplina": disciplina,
+        "unidade": unidade,
+        "aula": aula,
+        "trecho_id": "FINAL",
+        "comentario_final": comentario,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+    existente = supabase.table("validacoes") \
+        .select("id") \
+        .eq("user_email", email) \
+        .eq("disciplina", disciplina) \
+        .eq("unidade", unidade) \
+        .eq("aula", aula) \
+        .eq("trecho_id", "FINAL") \
+        .execute()
+
+    if existente.data:
+        supabase.table("validacoes") \
+            .update(data) \
+            .eq("id", existente.data[0]["id"]) \
+            .execute()
+    else:
+        supabase.table("validacoes") \
+            .insert(data) \
+            .execute()
