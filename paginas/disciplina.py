@@ -80,10 +80,11 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
                 registrar_resposta(
                     email=email,
                     disciplina=nome_disciplina,
+                    unidade=unidade,
+                    aula=aula,
                     trecho_id=f"t{i}",
                     status=status,
                 )
-            st.markdown("---")
 
     # Comentário final opcional
     comentario = st.text_area(
