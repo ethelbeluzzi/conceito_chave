@@ -1,7 +1,7 @@
 # paginas/disciplina.py
 import streamlit as st
 import pandas as pd
-from core.db import registrar_resposta, registrar_comentario
+from core.db import registrar_resposta, registrar_comentario, obter_resposta_existente
 
 def preparar_markdown(texto: str) -> str:
     if pd.isna(texto):
@@ -45,7 +45,6 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
     )
     
     # 3) Explicação geral
-    # 3) Explicação geral
     st.markdown("<h4>🧾 Explicação geral</h4>", unsafe_allow_html=True)
     st.markdown(
         "Esses são os conceitos-chave para validação. "
@@ -66,25 +65,50 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
                 trecho_md = preparar_markdown(texto_trecho)
                 st.markdown(trecho_md)
             with col2:
-                escolha = st.radio(
-                    label="Validação:",
-                    options=["Não informado", "Aprovo", "Desaprovo"],
-                    key=f"radio_{nome_disciplina}_u{unidade}_a{aula}_t{i}",
-                    horizontal=True,
-                )
-                status = None
-                if escolha == "Aprovo":
-                    status = "aprovo"
-                elif escolha == "Desaprovo":
-                    status = "desaprovo"
-                registrar_resposta(
+                trecho_id = f"t{i}"
+
+                # Consulta status salvo no Supabase
+                status_salvo = obter_resposta_existente(
                     email=email,
                     disciplina=nome_disciplina,
                     unidade=unidade,
                     aula=aula,
-                    trecho_id=f"t{i}",
-                    status=status,
+                    trecho_id=trecho_id,
                 )
+
+                # Define valor inicial do botão
+                if status_salvo == "aprovo":
+                    index_inicial = 1
+                elif status_salvo == "desaprovo":
+                    index_inicial = 2
+                else:
+                    index_inicial = 0
+
+                escolha = st.radio(
+                    label="Validação:",
+                    options=["Não informado", "Aprovo", "Desaprovo"],
+                    index=index_inicial,
+                    key=f"radio_{nome_disciplina}_u{unidade}_a{aula}_t{i}",
+                    horizontal=True,
+                )
+
+                # Mapeia para status
+                status_atual = None
+                if escolha == "Aprovo":
+                    status_atual = "aprovo"
+                elif escolha == "Desaprovo":
+                    status_atual = "desaprovo"
+
+                # Só grava se for diferente do que já estava salvo
+                if status_atual != status_salvo:
+                    registrar_resposta(
+                        email=email,
+                        disciplina=nome_disciplina,
+                        unidade=unidade,
+                        aula=aula,
+                        trecho_id=trecho_id,
+                        status=status_atual,
+                    )
 
     # Comentário final opcional
     comentario = st.text_area(
@@ -97,12 +121,12 @@ def pagina_disciplina(nome_disciplina: str, unidade: int, aula: int):
 
     st.markdown("---")
 
-    # 4) Texto completo — "Texto completo da aula para consulta"
+    # 5) Texto completo — "Texto completo da aula para consulta"
     st.markdown("### 📚 Texto completo da aula para consulta")
     texto_md = preparar_markdown(dados_linha["conteudo"])
     st.markdown(texto_md)
 
-    # Navegação: Voltar / Próxima aula
+    # 6) Navegação: Voltar / Próxima aula
     st.markdown("---")
     col_esq, col_dir = st.columns([1, 1])
 
