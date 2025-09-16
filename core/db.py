@@ -76,3 +76,21 @@ def registrar_comentario(email, disciplina, unidade, aula, comentario):
         supabase.table("validacoes") \
             .insert(data) \
             .execute()
+
+def obter_resposta_existente(email, disciplina, unidade, aula, trecho_id):
+    if not email:
+        return None
+
+    resultado = supabase.table("validacoes") \
+        .select("status") \
+        .eq("user_email", email) \
+        .eq("disciplina", disciplina) \
+        .eq("unidade", unidade) \
+        .eq("aula", aula) \
+        .eq("trecho_id", trecho_id) \
+        .limit(1) \
+        .execute()
+
+    if resultado.data:
+        return resultado.data[0].get("status")
+    return None
